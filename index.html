@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#090a0b" />
+  <meta name="description" content="Rodízio de atendimento Sal 71. Equipe em ordem e registro diário de cortes." />
+  <title>Sal 71 · Rodízio de atendimento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <noscript><p class="notice">Ative o JavaScript do navegador para usar o rodízio e consultar seus registros.</p></noscript>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand"><img src="assets/sal71-logo-white.png" width="1080" height="1080" alt="Sal 71 Barbearia" /><span class="brand-divider"></span><div><p class="eyebrow">PAINEL DA EQUIPE</p><h1>Rodízio de atendimento</h1></div></div>
+      <button class="secondary-button team-button" id="settingsButton"><span aria-hidden="true">☷</span> Editar equipe</button>
+    </header>
+
+    <div class="daybar">
+      <div><span class="status-dot" aria-hidden="true"></span><strong id="dayLabel">Hoje</strong><span class="day-detail" id="dayDetail"></span></div>
+      <span class="day-detail">Registros salvos por dia</span>
+    </div>
+    <p class="notice error" id="storageNotice" role="alert" hidden></p>
+
+    <div class="view-tabs" role="tablist" aria-label="Seções do rodízio">
+      <button type="button" role="tab" id="tab-attendance" aria-controls="panel-attendance" aria-selected="true">Atendimento</button>
+      <button type="button" role="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="false" tabindex="-1">Resumo do dia</button>
+      <button type="button" role="tab" id="tab-history" aria-controls="panel-history" aria-selected="false" tabindex="-1">Histórico diário</button>
+    </div>
+    <section class="tab-panel attendance-view" id="panel-attendance" role="tabpanel" aria-labelledby="tab-attendance" tabindex="0">
+      <section class="rotation-panel" aria-labelledby="rotationHeading">
+        <img class="watermark" src="assets/sal71-watermark.png" alt="" aria-hidden="true" />
+        <div class="panel-heading"><div><p class="eyebrow">UM DE CADA VEZ</p><h2 id="rotationHeading">O ritmo da equipe.</h2></div><span class="order-badge"><span aria-hidden="true">↻</span> Ordem fixa</span></div>
+        <div class="reel-shell" id="reelShell">
+          <div class="reel-meta"><span id="reelLabel">PROFISSIONAL DA VEZ</span><span id="turnNumber">01 / 04</span></div>
+          <div class="reel-viewport" aria-hidden="true">
+            <div class="reel-scene"><div class="reel-rotor" id="reelRotor"></div></div>
+            <div class="selection-window"><span class="selection-mark left"></span><span class="selection-mark right"></span></div>
+          </div>
+          <div class="current-details"><span class="live-label"><i></i><span id="currentStatus">Na vez</span></span><span><strong id="currentCount">0</strong> cortes nesta data</span></div>
+        </div>
+        <div class="sr-only" aria-live="polite">Profissional da vez: <span id="currentName"></span>.</div>
+        <div class="next-card" id="nextCard" aria-live="polite">
+          <span class="next-symbol" aria-hidden="true">↓</span>
+          <div><p class="eyebrow">PRÓXIMO BARBEIRO</p><strong id="nextName"></strong><span id="nextHint">Na sequência do atendimento</span></div>
+          <span class="next-position" id="nextPosition"></span>
+        </div>
+        <button class="attend-button" id="attendButton"><span class="button-check" aria-hidden="true">✓</span><span><strong id="attendLabel">Registrar corte</strong><small id="attendHint">Concluir e passar a vez</small></span><span class="button-arrow" aria-hidden="true">→</span></button>
+        <button type="button" class="skip-button" id="skipButton" aria-describedby="skipHint"><span aria-hidden="true">↷</span> Pular vez</button>
+        <p class="rotation-footnote" id="skipHint">Indisponível agora? Pule a vez sem registrar um corte.</p>
+      </section>
+
+    </section>
+    <section class="tab-panel summary-view" id="panel-summary" role="tabpanel" aria-labelledby="tab-summary" tabindex="0" hidden>
+      <div class="view-heading"><div><p class="eyebrow">HOJE</p><h2>Resumo do dia</h2><p>Acompanhe os cortes e a ordem da equipe.</p></div></div>
+      <div class="records-panel" aria-label="Resumo de hoje">
+        <section class="overview" aria-label="Indicadores">
+          <div class="metric metric-main"><span>Cortes do dia</span><strong id="totalCuts">0</strong><small>total da equipe</small></div>
+          <div class="metric"><span>Profissionais</span><strong id="teamSize">0</strong><small>neste rodízio</small></div>
+          <div class="last-record"><span>Último registro</span><strong id="lastCut">—</strong></div>
+        </section>
+        <section class="summary-section">
+          <div class="section-heading"><h2>Equipe em ordem</h2><span class="section-meta">CORTES</span></div>
+          <div class="summary-list" id="summaryList"></div>
+          <p class="summary-note">A lista segue a ordem de atendimento.</p>
+        </section>
+        <div class="records-footer"><button type="button" id="viewTodayHistory" class="text-button">Ver atendimentos de hoje →</button><button id="resetButton" class="text-button">Zerar dia</button></div>
+      </div>
+    </section>
+    <section class="tab-panel archive-view" id="panel-history" role="tabpanel" aria-labelledby="tab-history" tabindex="0" hidden>
+      <div class="view-heading"><div><p class="eyebrow">DIA A DIA</p><h2>Histórico diário</h2><p>Consulte o total de cortes, os profissionais e os horários de cada dia.</p></div></div>
+      <div class="archive-layout">
+        <aside class="archive-days" aria-label="Escolher registro diário">
+          <label class="date-picker"><span>Consultar uma data</span><input id="recordDate" type="date" aria-label="Data do histórico" /></label>
+          <button type="button" class="secondary-button" id="todayButton">Ver hoje</button>
+          <div class="section-heading"><h3>Dias salvos</h3><span class="section-meta" id="savedDaysCount"></span></div>
+          <div id="savedDaysList" class="saved-days-list"></div>
+        </aside>
+        <div class="archive-detail" aria-live="polite">
+          <div class="section-heading"><div><p class="eyebrow">REGISTRO SELECIONADO</p><h2 id="historyDateTitle"></h2></div><span class="history-count" id="historyCount"></span></div>
+          <div class="archive-total"><span>Total de cortes</span><strong id="historyTotal">0</strong></div>
+          <section class="archive-summary" aria-labelledby="historyTeamTitle"><div class="section-heading"><h3 id="historyTeamTitle">Cortes por profissional</h3><span class="section-meta">CORTES</span></div><div id="historySummary" class="summary-list"></div></section>
+          <section class="history-section" aria-labelledby="historyEntriesTitle"><div class="section-heading"><h3 id="historyEntriesTitle">Atendimentos registrados</h3><span class="section-meta">HORÁRIO</span></div><div id="historyList" class="history-list"></div></section>
+          <p class="summary-note">Apenas cortes concluídos aparecem aqui. Pular a vez não gera registro.</p>
+        </div>
+      </div>
+    </section>
+    <p class="storage-footer" id="saveStatus">Salvo neste navegador</p>
+    <footer class="page-footer"><span>SAL 71 <span class="footer-dot">·</span> BARBEARIA</span><span>Cada atendimento conta.</span></footer>
+  </main>
+
+  <dialog id="settingsDialog" aria-labelledby="teamTitle">
+    <form id="teamForm" class="settings-panel">
+      <div class="modal-heading"><div><p class="eyebrow">ORDEM DE ATENDIMENTO</p><h2 id="teamTitle">Sua equipe.</h2></div><button type="button" class="icon-button" id="closeSettings" aria-label="Fechar configurações">×</button></div>
+      <p class="helper">Use as setas para definir quem vem depois de quem. Ao chegar ao fim, o rodízio volta ao primeiro nome.</p>
+      <div id="nameFields" class="name-fields"></div>
+      <button type="button" class="add-name" id="addNameButton">+ Adicionar profissional</button>
+      <p class="form-error" id="teamError" role="alert"></p>
+      <p class="helper small">A edição mantém os cortes já registrados. Os dias anteriores preservam sua equipe e seus totais.</p>
+      <div class="modal-actions"><button type="button" class="secondary-button" id="cancelButton">Cancelar</button><button type="submit" class="primary-button">Salvar equipe</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="rodizio.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
